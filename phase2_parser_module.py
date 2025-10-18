@@ -22,27 +22,32 @@ class ParserModule:
 
     def statement(self):
         token = self.peek()
-        if token[1] in ('int', 'float'):
+        # ---------------- Variable Declaration ----------------
+        if token[0] == 'KEYWORD' and token[1] in ('int', 'float', 'string', 'bool', 'char'):
             self.consume('KEYWORD')
             self.consume('IDENTIFIER')
             if self.peek()[1] == '=':
-                self.consume('OPERATOR')
+                self.consume('OPERATOR', '=')
                 self.expression()
             self.consume('SEPARATOR', ';')
+        # ---------------- Assignment ----------------
         elif token[0] == 'IDENTIFIER':
             self.consume('IDENTIFIER')
             self.consume('OPERATOR', '=')
             self.expression()
             self.consume('SEPARATOR', ';')
-        elif token[1] == 'print':
+        # ---------------- Print ----------------
+        elif token[0] == 'KEYWORD' and token[1] == 'print':
             self.consume('KEYWORD', 'print')
             self.consume('SEPARATOR', '(')
             self.expression()
             self.consume('SEPARATOR', ')')
             self.consume('SEPARATOR', ';')
-        elif token[1] == 'if':
+        # ---------------- If-Else ----------------
+        elif token[0] == 'KEYWORD' and token[1] == 'if':
             self.if_else_block()
-        elif token[1] == 'while':
+        # ---------------- While Loop ----------------
+        elif token[0] == 'KEYWORD' and token[1] == 'while':
             self.consume('KEYWORD', 'while')
             self.consume('SEPARATOR', '(')
             self.expression()
@@ -51,11 +56,13 @@ class ParserModule:
             while self.peek()[1] != '}':
                 self.statement()
             self.consume('SEPARATOR', '}')
+        # ---------------- Closing brace ----------------
         elif token[1] == '}':
             return
         else:
             raise Exception(f"Syntax Error: Unexpected token {token}")
 
+    # ---------------- If-Else Block ----------------
     def if_else_block(self):
         self.consume('KEYWORD', 'if')
         self.consume('SEPARATOR', '(')
@@ -65,13 +72,25 @@ class ParserModule:
         while self.peek()[1] not in ('}', 'EOF'):
             self.statement()
         self.consume('SEPARATOR', '}')
-        if self.peek()[1] == 'else':
+        if self.peek()[0] == 'KEYWORD' and self.peek()[1] == 'else':
             self.consume('KEYWORD', 'else')
             self.consume('SEPARATOR', '{')
             while self.peek()[1] not in ('}', 'EOF'):
                 self.statement()
             self.consume('SEPARATOR', '}')
 
+    # ---------------- Expression Parsing ----------------
     def expression(self):
         while self.peek()[1] not in (';', ')', '{', '}', 'EOF'):
-            self.consume()
+            token = self.peek()
+            # Allow identifiers, numbers, string literals, char literals, booleans, operators
+            if token[0] in ('IDENTIFIER', 'NUMBER', 'STRING_LITERAL', 'CHAR_LITERAL'):
+                self.consume()
+            elif token[0] == 'KEYWORD' and token[1] in ('true', 'false'):
+                self.consume()
+            elif token[0] == 'OPERATOR':
+                self.consume()
+            elif token[0] == 'SEPARATOR' and token[1] in ('(', ')'):
+                self.consume()
+            else:
+                break
