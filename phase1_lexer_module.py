@@ -5,7 +5,7 @@ def perform_lexical_analysis(code):
         ('KEYWORD', r'\b(int|float|if|else|while|print)\b'),
         ('IDENTIFIER', r'[a-zA-Z_]\w*'),
         ('NUMBER', r'\d+(\.\d+)?'),
-        ('OPERATOR', r'[+\-*/=<>!]'),
+        ('OPERATOR', r'[+\-*/=<>!]&'),
         ('SEPARATOR', r'[(){};,]'),
         ('WHITESPACE', r'\s+'),
     ]
